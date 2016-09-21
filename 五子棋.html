@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+	<meta charset="utf-8" />
+	<script type="text/javascript">
+		var canvas;
+		var context;
+
+		var gridLeft = 100;
+		var gridTop = 100;
+		var gridGap = 40;
+		var gridCount = 14;
+
+		var gameData = new Array(gridCount + 1); //二维数保存棋盘信息，初始化null为没有走过的, true为黑棋, false为白棋走
+		for (var x = 0; x < gridCount + 1; x++) {
+			gameData[x] = new Array(gridCount + 1);
+			for (var y = 0; y < gridCount + 1; y++) {
+				gameData[x][y] = null;
+			}
+		}
+
+		var isBlack = true; //true为黑棋走, false为白棋走的
+		var isGameOver = false; //
+
+		function DrawLine(x1, y1, x2, y2) {
+			context.beginPath();
+			context.moveTo(x1, y1);
+			context.lineTo(x2, y2);
+			context.closePath();
+			context.stroke();
+		}
+
+		function DrawArc(x, y, r, isFill) {
+			context.beginPath();
+			context.arc(x, y, r, 0, Math.PI * 2, true);
+			context.closePath();
+
+			if(isFill) {
+				context.fill();
+			}
+			else {
+				context.stroke();
+			}
+		}
+
+		function body_onload() {
+			canvas = document.getElementById("canvas");
+			context = canvas.getContext("2d");
+
+			for (var i = 0; i <= gridCount; i ++) {
+				DrawLine(gridLeft + i * gridGap, gridTop, gridLeft + i * gridGap, gridLeft + gridGap * gridCount);
+				DrawLine(gridLeft, gridTop + i * gridGap, gridLeft + gridGap * gridCount, gridTop + i * gridGap);
+			}
+		}
+		
+		function canvas_onmousedown(e) {
+			if (isGameOver) {
+				alert("The End. Refresh to replay.");
+				return;
+			}
+
+			var x = parseInt((e.clientX - gridLeft + (gridGap / 2)) / gridGap);
+			var y = parseInt((e.clientY - gridTop + (gridGap / 2)) / gridGap);
+
+			if (x >= 0 && x <= gridCount && y >= 0 && y < gridCount && gameData[x][y] == null) {
+				DrawArc(gridLeft + x * gridGap, gridTop + y * gridGap, gridGap / 2, isBlack);
+				gameData[x][y] = isBlack;
+				judge(x, y, isBlack);
+				isBlack = !isBlack;
+			}
+		}
+
+		function judge(x, y, isBlack) {
+			var count1 = 1;
+			var count2 = 1;
+			var count3 = 1;
+			var count4 = 1;
+			//左右
+			for (var i = x - 1; i > 0 && gameData[i][y] == isBlack; i--) {
+				count1++;
+			}
+			for (var i = x + 1; i < (gridCount + 1) && gameData[i][y] == isBlack; i++) {
+				count1++;
+			}
+			//上下
+			for (var j = y - 1; j > 0 && gameData[x][j] == isBlack; j--) {
+				count2++;
+			}
+			for (var j = y + 1; j < (gridCount + 1) && gameData[x][j] == isBlack; j++) {
+				count2++;
+			}
+			//左上右下
+			for (var i = x - 1, j = y - 1; i >= 0 && j >= 0 && gameData[i][j] == isBlack; i--, j--) {
+				count3++;
+			}
+			for (var i = x + 1, j = y + 1; i < (gridCount + 1) && j < (gridCount + 1) && gameData[i][j] == isBlack; i++, j++) {
+				count3++;
+			}
+			//右上左下
+			for (var i = x - 1, j = y + 1; i >= 0 && j < (gridCount + 1) && gameData[i][j] == isBlack; i--, j++) {
+				count4++;
+			}
+			for (var i = x + 1, j = y - 1; i < (gridCount + 1) && j >= 0 && gameData[i][j] == isBlack; i++, j--) {
+				count4++;
+			}
+			if (
+				count1 >= 5 ||
+				count2 >= 5 ||
+				count3 >= 5 ||
+				count4 >= 5) {
+				alert((isBlack ? "Black" : "White") + " Win!");
+				isGameOver = true;
+			}
+		}
+
+	</script>
+</head>
+<body onload="body_onload()">
+		<canvas width="1000" id="canvas" onmousedown="canvas_onmousedown(event)" height="1000">HTML5 canvas not supported.</canvas>
+</body>
+</html>
+
+
+
